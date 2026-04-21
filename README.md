@@ -1,98 +1,93 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# MetaQuest API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Backend da aplicação **MetaQuest** — um sistema pessoal de evolução gamificado, focado em usuários com TDAH.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+Construído com NestJS, Prisma 7 + Neon PostgreSQL, JWT Auth e Zod validation. Deploy no Render.
 
-## Description
+---
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Contexto do Projeto
 
-## Project setup
+Este projeto é um experimento prático inspirado nos conceitos de **Fabio Akita** sobre desenvolvimento com IA:
 
-```bash
-$ npm install
+- **[Clean Code para Agentes de IA](https://akitaonrails.com/2026/04/20/clean-code-para-agentes-de-ia/)** — como estruturar código para que agentes de IA possam entendê-lo e evoluí-lo com consistência
+- **[VS Code e o Novo Cartão Perfurado](https://akitaonrails.com/2026/04/11/vs-code-e-o-novo-cartao-perfurado/)** — reflexão sobre o papel do programador na era dos agentes
+- **[Do Zero à Pós-Produção em 1 Semana com IA](https://akitaonrails.com/2026/02/20/do-zero-a-pos-producao-em-1-semana-como-usar-ia-em-projetos-de-verdade-bastidores-do-the-m-akita-chronicles/)** — metodologia de uso real de IA em projetos de produção
+
+### A Regra
+
+> **Todo o código deste projeto é escrito exclusivamente por IA.**
+> O desenvolvedor não digita código manualmente — apenas descreve intenções, valida resultados e toma decisões de produto.
+
+Isso é um **"build to learn"**: o objetivo não é só entregar um produto, mas entender na prática os limites, as capacidades e o fluxo de trabalho com agentes de IA como par de programação.
+
+A premissa é próxima ao **Extreme Programming (XP)**, onde o loop de feedback é curto, as entregas são incrementais e a qualidade é mantida por disciplina de processo — mas aqui o "par" é uma IA.
+
+### O que isso muda na prática
+
+- Arquitetura tem que ser **legível para agentes**: módulos pequenos, nomes explícitos, sem mágica implícita
+- Cada decisão técnica precisa ser **comunicável em linguagem natural** — se não consegue descrever, não consegue delegar
+- O desenvolvedor vira um **engenheiro de produto + revisor** — define o quê, a IA define o como
+- Erros de IA são corrigidos com mais contexto, não com edição manual
+
+---
+
+## Stack
+
+| Camada | Tecnologia |
+|---|---|
+| Framework | NestJS (TypeScript) |
+| ORM | Prisma 7 com driver adapter |
+| Banco | Neon PostgreSQL (serverless) |
+| Auth | JWT + bcrypt |
+| Validação | Zod via pipe customizado |
+| Deploy | Render |
+
+## Módulos
+
+- **Auth** — registro, login, JWT
+- **User** — perfil, XP, level, streak
+- **Task** — CRUD de tarefas/hábitos (daily/weekly/one_time, easy/medium/hard)
+- **Completion** — registro de conclusões com recálculo de gamificação
+- **Note** — notas diárias/semanais/mensais em markdown (futuro: sync com Obsidian/GitHub)
+- **Gamification** — serviço de XP, level e streak compartilhado
+
+## Endpoints principais
+
+```
+POST   /auth/register
+POST   /auth/login
+GET    /user/me
+
+GET    /tasks
+POST   /tasks
+PATCH  /tasks/:id
+DELETE /tasks/:id
+
+POST   /completions
+
+GET    /notes
+PUT    /notes
+DELETE /notes/:key
 ```
 
-## Compile and run the project
+## Setup local
 
 ```bash
-# development
-$ npm run start
+cp .env.example .env
+# preencha DATABASE_URL (Neon) e JWT_SECRET
 
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm install
+npx prisma migrate dev
+npm run start:dev
 ```
 
-## Run tests
+## Deploy (Render)
 
-```bash
-# unit tests
-$ npm run test
+- **Build command:** `npm install && prisma generate && nest build`
+- **Start command:** `node dist/src/main`
+- Variáveis de ambiente: `DATABASE_URL`, `JWT_SECRET`, `JWT_EXPIRES_IN`, `PORT`
 
-# e2e tests
-$ npm run test:e2e
+---
 
-# test coverage
-$ npm run test:cov
-```
-
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+> *"A IA não substitui o programador. Ela substitui o trabalho repetitivo — o que sobra é o que sempre foi o trabalho real: pensar, decidir, entender."*
