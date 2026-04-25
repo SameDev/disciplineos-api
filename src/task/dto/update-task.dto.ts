@@ -5,6 +5,7 @@ export const UpdateTaskSchema = z.object({
   type: z.enum(['daily', 'weekly', 'one_time']).optional(),
   difficulty: z.enum(['easy', 'medium', 'hard']).optional(),
   stepGoal: z.number().int().positive().nullable().optional(),
+  isActivity: z.boolean().optional(),
 });
 
 export type UpdateTaskDto = z.infer<typeof UpdateTaskSchema>;

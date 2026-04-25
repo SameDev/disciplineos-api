@@ -5,6 +5,7 @@ export const CreateTaskSchema = z.object({
   type: z.enum(['daily', 'weekly', 'one_time']),
   difficulty: z.enum(['easy', 'medium', 'hard']),
   stepGoal: z.number().int().positive().optional(),
+  isActivity: z.boolean().optional(),
 });
 
 export type CreateTaskDto = z.infer<typeof CreateTaskSchema>;

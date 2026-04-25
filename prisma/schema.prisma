@@ -51,6 +51,7 @@ model Task {
   type        TaskType
   difficulty  Difficulty
   stepGoal    Int?
+  isActivity  Boolean  @default(false)
   userId      String
   user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   completions Completion[]
