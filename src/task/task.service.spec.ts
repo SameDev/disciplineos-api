@@ -1,5 +1,6 @@
 import { NotFoundException } from '@nestjs/common';
 import { TaskService } from './task.service';
+import { GamificationService } from '../gamification/gamification.service';
 
 const makePrisma = () => ({
   task: {
@@ -9,7 +10,17 @@ const makePrisma = () => ({
     update: jest.fn(),
     delete: jest.fn(),
   },
+  user: {
+    findUnique: jest.fn(),
+    update: jest.fn(),
+  },
 });
+
+const makeGamification = (): GamificationService => ({
+  getXPByDifficulty: jest.fn().mockReturnValue(10),
+  calculateLevel: jest.fn().mockReturnValue(1),
+  updateStreak: jest.fn(),
+} as unknown as GamificationService);
 
 const USER_ID = 'user-1';
 const TASK_ID = 'task-1';
@@ -21,15 +32,18 @@ const baseTask = {
   type: 'daily' as const,
   difficulty: 'easy' as const,
   createdAt: new Date(),
+  _count: { completions: 0 },
 };
 
 describe('TaskService', () => {
   let service: TaskService;
   let prisma: ReturnType<typeof makePrisma>;
+  let gamification: GamificationService;
 
   beforeEach(() => {
     prisma = makePrisma();
-    service = new TaskService(prisma as any);
+    gamification = makeGamification();
+    service = new TaskService(prisma as any, gamification);
   });
 
   // ─── create ───────────────────────────────────────────────────────────────
@@ -107,14 +121,49 @@ describe('TaskService', () => {
       await expect(service.remove(USER_ID, TASK_ID)).rejects.toThrow(NotFoundException);
     });
 
-    it('deletes task and returns { deleted: true }', async () => {
-      prisma.task.findFirst.mockResolvedValue(baseTask);
+    it('deletes task with no completions without touching XP', async () => {
+      prisma.task.findFirst.mockResolvedValue({ ...baseTask, _count: { completions: 0 } });
       prisma.task.delete.mockResolvedValue(baseTask);
 
       const result = await service.remove(USER_ID, TASK_ID);
 
+      expect(prisma.user.findUnique).not.toHaveBeenCalled();
+      expect(prisma.user.update).not.toHaveBeenCalled();
       expect(prisma.task.delete).toHaveBeenCalledWith({ where: { id: TASK_ID } });
       expect(result).toEqual({ deleted: true });
+    });
+
+    it('subtracts XP for each completion when deleting a task', async () => {
+      prisma.task.findFirst.mockResolvedValue({ ...baseTask, difficulty: 'easy', _count: { completions: 3 } });
+      prisma.user.findUnique.mockResolvedValue({ xp: 100 });
+      prisma.user.update.mockResolvedValue({});
+      prisma.task.delete.mockResolvedValue(baseTask);
+      (gamification.getXPByDifficulty as jest.Mock).mockReturnValue(10);
+      (gamification.calculateLevel as jest.Mock).mockReturnValue(1);
+
+      const result = await service.remove(USER_ID, TASK_ID);
+
+      // 3 completions × 10 XP = 30 XP removed → 100 - 30 = 70
+      expect(prisma.user.update).toHaveBeenCalledWith({
+        where: { id: USER_ID },
+        data: { xp: 70, level: 1 },
+      });
+      expect(result).toEqual({ deleted: true });
+    });
+
+    it('floors XP at 0 when removal would go negative', async () => {
+      prisma.task.findFirst.mockResolvedValue({ ...baseTask, difficulty: 'hard', _count: { completions: 5 } });
+      prisma.user.findUnique.mockResolvedValue({ xp: 50 });
+      prisma.user.update.mockResolvedValue({});
+      prisma.task.delete.mockResolvedValue(baseTask);
+      (gamification.getXPByDifficulty as jest.Mock).mockReturnValue(50);
+
+      await service.remove(USER_ID, TASK_ID);
+
+      // 5 × 50 = 250 XP to remove, but user only has 50 → floor at 0
+      expect(prisma.user.update).toHaveBeenCalledWith(
+        expect.objectContaining({ data: expect.objectContaining({ xp: 0 }) }),
+      );
     });
   });
 });

@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
 import { TaskService } from './task.service';
 import { TaskController } from './task.controller';
+import { GamificationModule } from '../gamification/gamification.module';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports: [AuthModule],
+  imports: [AuthModule, GamificationModule],
   providers: [TaskService, JwtAuthGuard],
   controllers: [TaskController],
 })
